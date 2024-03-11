@@ -1,0 +1,61 @@
+
+Design:
+	First design (example CAMBADA robots):
+		- Coordination layer;
+			* Process Manager;
+			* Monitor;
+			* RTDB;
+		- Low-level control layer
+			* Motion;
+			* System Monitor
+			* Odometry
+
+	The real software design (CAMBADA):
+		- Execution Flow -> (Low-level);
+		- Morphological Processing Sub-System; 
+		- Utility Sub-Sytem;
+		- Color Processing Sub-System;
+
+	Software Implementation
+
+	Design fills the gap between knowing whats needed (software requirements phase) and building the code that makes it work (construction phase)
+	There is a process for design but not an algorythm
+	Software design is a heuristic rather than a deterministic process
+	Software design is needed at several different levels of detail in a system:
+		- High-Level: System & Sub-Systems 
+		- Medium-Level: Classes
+		- Low-level: Algorithms and Data Structures
+	Poorly designed programs are difficult to understand and modify 
+	Complexity in software:
+		- Essential complexities - complexities inherent in the problem
+		- Accidental complexities 
+	Goal: manage essential complexity while avoiding the introduction of additional accidental complexities
+	Software Complexity:
+		- Modularity (subdivide the solution into smaller easier to manage components. (divide and conquer));
+		- Abstraction (use abstraction to supress details in places where they are necessary);
+		- Information Hiding (hide details and complexity behind simple interfaces);
+		- Inheritance (general components may be reused to define more specific elements);
+		- Composition (resuse of other components to build a new solution)
+	Design is difficult because design is an abstraction of the solution which has yet to be created
+	Non-deterministic
+	Heuristic
+	Emergent
+
+	Process:
+		- software requirements;
+		- system specification;
+		- architecture and patterns;
+		- build prototypes;
+		- document;
+		- refactor
+		============================
+		- user requirements and system specification;
+		- domain knowledge;
+ 		- implementation knowledge
+	
+
+   
+	
+
+
+
