@@ -90,3 +90,27 @@ Design Patterns:
 		- Template Method 
 		- Visitor
 	[link] -> https://refactoring.guru/design-patterns/catalog
+
+Behavioral Patterns for quiz:
+- Chain of Responsability: Lets you pass request alon a chain of handlers,
+upon receiving a request, each handler decider either to process the request
+or to pass it to the next handler in chain.
+Structure: Handler(setNext); BaseHandler implements Handler, ConcreteHandler extends BaseHandler
+
+- Command: Turns a request into a stand-alone object that contains all information
+about the request. This transformation lest you pass requests as a method 
+argument, delay or queue a request's execution, and support undoable operations
+Structure: Invoker who has the command by setCommand
+	Command, ConcreteCommand implements Command
+	Receiver who is altered by the commands
+
+Iterator: Lets you traverse elements of a collection without exposing its underlying
+representation
+Structure: Iterator, ConcreteIterator implements Iterator
+		IterableCollection, ConcreteCollection
+
+Mediator: Lets you reduce chaotic dependencies between objects, restricts
+direct communications between the objects and forces them to collaborate only via a mediator
+
+
+

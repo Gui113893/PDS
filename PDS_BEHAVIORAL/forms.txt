@@ -1,0 +1,663 @@
+Command Pattern:
+	The Command pattern is a behavioral design pattern that encapsulates a request as an object, thereby allowing you to parameterize clients with queues, requests, and operations. This enables the requests to be handled, queued, logged, or undone. It decouples the sender and receiver of a command, which promotes flexibility, extensibility, and modularity in software design.
+	In software design, the Command pattern solves the following problems:
+    		Decoupling: It decouples the object that invokes the operation (the client) from the object that knows how to perform it (the receiver).
+    		Undo/Redo: It provides a way to implement undoable operations by encapsulating a request as an object, allowing you to store and execute it later.
+    		Queueing requests: It enables the creation of queues of requests, allowing for the execution of requests at a later time or in a specific order.
+    		Logging: Commands can be logged for auditing or error-handling purposes.
+	Structure and Components:
+    		Command: Declares an interface for executing an operation.
+    		Concrete Command: Implements the Command interface and encapsulates the details of the operation to be executed.
+    		Invoker: Requests the command to carry out the operation.
+    		Receiver: Knows how to perform the operations associated with carrying out a request.
+	Example:
+    		Command: TextEditCommand interface with methods like execute() and undo().
+    		Concrete Commands: InsertCommand, DeleteCommand, FormatCommand, etc., implementing TextEditCommand.
+    		Receiver: TextDocument class which contains the text content and performs operations like insertion, deletion, formatting, etc.
+    		Invoker: TextEditor class which maintains a stack of executed commands and can invoke their execute() and undo() methods.
+		// Command interface
+interface TextEditCommand {
+    void execute();
+    void undo();
+}
+
+// Concrete Command
+class InsertCommand implements TextEditCommand {
+    private TextDocument document;
+    private String text;
+    private int position;
+
+    public InsertCommand(TextDocument document, String text, int position) {
+        this.document = document;
+        this.text = text;
+        this.position = position;
+    }
+
+    public void execute() {
+        document.insert(text, position);
+    }
+
+    public void undo() {
+        document.delete(position, text.length());
+    }
+}
+
+// Receiver
+class TextDocument {
+    private StringBuilder content;
+
+    public TextDocument() {
+        content = new StringBuilder();
+    }
+
+    public void insert(String text, int position) {
+        content.insert(position, text);
+    }
+
+    public void delete(int position, int length) {
+        content.delete(position, position + length);
+    }
+
+    public String getContent() {
+        return content.toString();
+    }
+}
+
+// Invoker
+class TextEditor {
+    private TextDocument document;
+    private java.util.Stack<TextEditCommand> commandHistory;
+
+    public TextEditor(TextDocument document) {
+        this.document = document;
+        commandHistory = new java.util.Stack<>();
+    }
+
+    public void executeCommand(TextEditCommand command) {
+        command.execute();
+        commandHistory.push(command);
+    }
+
+    public void undoLastCommand() {
+        if (!commandHistory.isEmpty()) {
+            TextEditCommand command = commandHistory.pop();
+            command.undo();
+        }
+    }
+}
+
+// Example usage
+public class Main {
+    public static void main(String[] args) {
+        TextDocument document = new TextDocument();
+        TextEditor editor = new TextEditor(document);
+
+        InsertCommand insertCommand = new InsertCommand(document, "Hello", 0);
+        editor.executeCommand(insertCommand);
+        System.out.println(document.getContent()); // Output: "Hello"
+
+        editor.undoLastCommand();
+        System.out.println(document.getContent()); // Output: ""
+    }
+}
+
+
+####
+Mediator Pattern:
+	Mediator is a behavioral design pattern that lets you reduce chaotic dependencies between objects. The pattern restricts direct communications between the objects and forces them to collaborate only via a mediator object.
+	The Mediator pattern is a behavioral design pattern that defines an object (the mediator) that encapsulates how a set of objects interact with each other. It promotes loose coupling by keeping objects from referring to each other explicitly and allows for more flexible and reusable code.
+Problem it solves:
+
+In software design, the Mediator pattern solves the following problems:
+
+    Complexity management: It simplifies the communication between objects by centralizing it through a mediator, thus reducing the complexity of direct object-to-object interactions.
+    Reduced coupling: It reduces the dependencies between objects, promoting better maintainability and scalability of the system.
+    Encapsulation of communication logic: It encapsulates the communication logic between objects within the mediator, making it easier to understand and modify.
+Structure and Components:
+	Components: Components are various classes that contain some business logic. Each component has a reference to a mediator, declared with the type of the mediator interface. The component isn’t aware of the actual class of the mediator, so you can reuse the component in other programs by linking it to a different mediator.
+	
+
+Components must not be aware of other components. If something important happens within or to a component, it must only notify the mediator. When the mediator receives the notification, it can easily identify the sender, which might be just enough to decide what component should be triggered in return.
+
+From a component’s perspective, it all looks like a total black box. The sender doesn’t know who’ll end up handling its request, and the receiver doesn’t know who sent the request in the first place.
+
+	Mediator: The Mediator interface declares methods of communication with components, which usually include just a single notification method. Components may pass any context as arguments of this method, including their own objects, but only in such a way that no coupling occurs between a receiving component and the sender’s class.
+	Concrete Mediator: Concrete Mediators encapsulate relations between various components. Concrete mediators often keep references to all components they manage and sometimes even manage their lifecycle.
+Example: 
+Mediator:
+
+The ChatMediator interface declares methods of communication with components.
+
+
+// Mediator interface
+interface ChatMediator {
+    void sendMessage(User sender, String message);
+}
+
+Concrete Mediator:
+
+The ChatRoom class encapsulates relations between various components.
+
+
+// Concrete Mediator
+class ChatRoom implements ChatMediator {
+    private List<User> users;
+
+    public ChatRoom() {
+        users = new ArrayList<>();
+    }
+
+    public void addUser(User user) {
+        users.add(user);
+    }
+
+    public void sendMessage(User sender, String message) {
+        for (User user : users) {
+            if (user != sender) {
+                user.receiveMessage(message);
+            }
+        }
+    }
+}
+
+Components:
+
+User and ChatUser represent various classes containing business logic. Each component has a reference to a mediator, declared with the type of the mediator interface. The component isn’t aware of the actual class of the mediator.
+
+
+// Component interface
+interface User {
+    void sendMessage(String message);
+    void receiveMessage(String message);
+}
+
+// Concrete Component
+class ChatUser implements User {
+    private String name;
+    private ChatMediator mediator;
+
+    public ChatUser(String name, ChatMediator mediator) {
+        this.name = name;
+        this.mediator = mediator;
+        mediator.addUser(this);
+    }
+
+    public void sendMessage(String message) {
+        mediator.sendMessage(this, message);
+    }
+
+    public void receiveMessage(String message) {
+        System.out.println(name + " received: " + message);
+    }
+}
+
+Example Usage:
+
+// Example usage
+public class Main {
+    public static void main(String[] args) {
+        ChatMediator chatRoom = new ChatRoom();
+        
+        User user1 = new ChatUser("Alice", chatRoom);
+        User user2 = new ChatUser("Bob", chatRoom);
+
+        user1.sendMessage("Hi Bob!");
+        user2.sendMessage("Hey Alice!");
+
+        // Output:
+        // Bob received: Hi Bob!
+        // Alice received: Hey Alice!
+    }
+}
+	
+###
+Observer Pattern:
+Observer is a behavioral design pattern that lets you define a subscription mechanism to notify multiple objects about any events that happen to the object they’re observing.
+The Observer pattern is a behavioral design pattern that defines a one-to-many dependency between objects, so that when one object changes state, all its dependents are notified and updated automatically. It enables objects to be notified of changes in another object's state without being tightly coupled to it, promoting loose coupling and flexibility.
+Problem it solves:
+
+In software design, the Observer pattern solves the following problems:
+
+    Maintaining consistency: It allows multiple objects to stay updated with the latest changes in another object's state, ensuring consistency across the system.
+    Decoupling: It decouples the subject (the object being observed) from its observers, allowing for easier maintenance, modification, and extension of both subject and observer classes.
+    Dynamic relationships: It supports dynamic relationships between objects, where objects can be added or removed from observation at runtime.
+
+Structural and Components:
+Publisher: The Publisher issues events of interest to other objects. These events occur when the publisher changes its state or executes some behaviors. Publishers contain a subscription infrastructure that lets new subscribers join and current subscribers leave the list.
+When a new event happens, the publisher goes over the subscription list and calls the notification method declared in the subscriber interface on each subscriber object.
+Subscribe: The Subscriber interface declares the notification interface. In most cases, it consists of a single update method. The method may have several parameters that let the publisher pass some event details along with the update.
+Concrete Subscribers: Concrete Subscribers perform some actions in response to notifications issued by the publisher. All of these classes must implement the same interface so the publisher isn’t coupled to concrete classes.
+Usually, subscribers need some contextual information to handle the update correctly. For this reason, publishers often pass some context data as arguments of the notification method. The publisher can pass itself as an argument, letting subscriber fetch any required data directly.
+Client: The Client creates publisher and subscriber objects separately and then registers subscribers for publisher updates.
+
+Example: In this example, the Observer pattern lets the text editor object notify other service objects about changes in its state.
+The list of subscribers is compiled dynamically: objects can start or stop listening to notifications at runtime, depending on the desired behavior of your app.
+
+In this implementation, the editor class doesn’t maintain the subscription list by itself. It delegates this job to the special helper object devoted to just that. You could upgrade that object to serve as a centralized event dispatcher, letting any object act as a publisher.
+
+Adding new subscribers to the program doesn’t require changes to existing publisher classes, as long as they work with all subscribers through the same interface.
+import java.util.HashMap;
+import java.util.ArrayList;
+
+// The base publisher class includes subscription management
+// code and notification methods.
+class EventManager {
+    private HashMap<String, ArrayList<EventListener>> listeners;
+
+    public EventManager() {
+        listeners = new HashMap<>();
+    }
+
+    public void subscribe(String eventType, EventListener listener) {
+        if (!listeners.containsKey(eventType)) {
+            listeners.put(eventType, new ArrayList<>());
+        }
+        listeners.get(eventType).add(listener);
+    }
+
+    public void unsubscribe(String eventType, EventListener listener) {
+        if (listeners.containsKey(eventType)) {
+            listeners.get(eventType).remove(listener);
+        }
+    }
+
+    public void notify(String eventType, String data) {
+        if (listeners.containsKey(eventType)) {
+            for (EventListener listener : listeners.get(eventType)) {
+                listener.update(data);
+            }
+        }
+    }
+}
+
+// Concrete subscribers react to updates issued by the publisher
+// they are attached to.
+interface EventListener {
+    void update(String filename);
+}
+
+class LoggingListener implements EventListener {
+    private String logFilename;
+    private String message;
+
+    public LoggingListener(String logFilename, String message) {
+        this.logFilename = logFilename;
+        this.message = message;
+    }
+
+    public void update(String filename) {
+        // Implement log writing logic
+        System.out.println("Logging: " + message.replace("%s", filename));
+    }
+}
+
+class EmailAlertsListener implements EventListener {
+    private String email;
+    private String message;
+
+    public EmailAlertsListener(String email, String message) {
+        this.email = email;
+        this.message = message;
+    }
+
+    public void update(String filename) {
+        // Implement email sending logic
+        System.out.println("Email alert sent to " + email + ": " + message.replace("%s", filename));
+    }
+}
+
+// The concrete publisher contains real business logic that's
+// interesting for some subscribers.
+class Editor {
+    public EventManager events;
+    private String file;
+
+    public Editor() {
+        events = new EventManager();
+    }
+
+    public void openFile(String path) {
+        this.file = path;
+        events.notify("open", file);
+    }
+
+    public void saveFile() {
+        // Implement file writing logic
+        events.notify("save", file);
+    }
+}
+
+// An application can configure publishers and subscribers at
+// runtime.
+public class Application {
+    public static void main(String[] args) {
+        Application app = new Application();
+        app.config();
+    }
+
+    public void config() {
+        Editor editor = new Editor();
+
+        LoggingListener logger = new LoggingListener(
+            "/path/to/log.txt",
+            "Someone has opened the file: %s");
+        editor.events.subscribe("open", logger);
+
+        EmailAlertsListener emailAlerts = new EmailAlertsListener(
+            "admin@example.com",
+            "Someone has changed the file: %s");
+        editor.events.subscribe("save", emailAlerts);
+
+        // Simulate file actions
+        editor.openFile("example.txt");
+        editor.saveFile();
+    }
+}
+
+###
+Strategy Pattern
+Strategy is a behavioral design pattern that lets you define a family of algorithms, put each of them into a separate class, and make their objects interchangeable.
+The Strategy pattern is a behavioral design pattern that enables an algorithm's behavior to be selected at runtime. It defines a family of algorithms, encapsulates each one, and makes them interchangeable. This pattern allows the algorithm to vary independently from clients that use it.
+Problem it solves:
+
+In software design, the Strategy pattern solves the following problems:
+
+    Encapsulating algorithms: It encapsulates algorithms into separate classes, making it easier to manage, maintain, and extend them.
+    Flexible behavior: It allows clients to select an algorithm from a family of algorithms dynamically, at runtime, without modifying the client's code.
+    Reducing duplication: It eliminates duplicate code by centralizing algorithmic variations in separate classes.
+Structure and Components:
+Context: The Context maintains a reference to one of the concrete strategies and communicates with this object only via the strategy interface.
+Stategy: The Strategy interface is common to all concrete strategies. It declares a method the context uses to execute a strategy.
+Concrete Strategy: Concrete Strategies implement different variations of an algorithm the context uses.
+The context calls the execution method on the linked strategy object each time it needs to run the algorithm. The context doesn’t know what type of strategy it works with or how the algorithm is executed.
+Client: The Client creates a specific strategy object and passes it to the context. The context exposes a setter which lets clients replace the strategy associated with the context at runtime.
+
+Example: // Strategy interface
+interface Strategy {
+    int execute(int a, int b);
+}
+
+// Concrete Strategy: Addition
+class ConcreteStrategyAdd implements Strategy {
+    public int execute(int a, int b) {
+        return a + b;
+    }
+}
+
+// Concrete Strategy: Subtraction
+class ConcreteStrategySubtract implements Strategy {
+    public int execute(int a, int b) {
+        return a - b;
+    }
+}
+
+// Concrete Strategy: Multiplication
+class ConcreteStrategyMultiply implements Strategy {
+    public int execute(int a, int b) {
+        return a * b;
+    }
+}
+
+// Context
+class Context {
+    private Strategy strategy;
+
+    public void setStrategy(Strategy strategy) {
+        this.strategy = strategy;
+    }
+
+    public int executeStrategy(int a, int b) {
+        return strategy.execute(a, b);
+    }
+}
+
+// Example application
+public class ExampleApplication {
+    public static void main(String[] args) {
+        Context context = new Context();
+
+        // Read inputs
+        int firstNumber = 10; // Example value, replace with actual input
+        int secondNumber = 5; // Example value, replace with actual input
+        String action = "addition"; // Example value, replace with actual input
+
+        // Set strategy based on user input
+        if (action.equals("addition")) {
+            context.setStrategy(new ConcreteStrategyAdd());
+        } else if (action.equals("subtraction")) {
+            context.setStrategy(new ConcreteStrategySubtract());
+        } else if (action.equals("multiplication")) {
+            context.setStrategy(new ConcreteStrategyMultiply());
+        }
+
+        // Execute strategy and print result
+        int result = context.executeStrategy(firstNumber, secondNumber);
+        System.out.println("Result: " + result);
+    }
+}
+### Visitor Pattern
+// Strategy interface
+interface Strategy {
+    int execute(int a, int b);
+}
+
+// Concrete Strategy: Addition
+class ConcreteStrategyAdd implements Strategy {
+    public int execute(int a, int b) {
+        return a + b;
+    }
+}
+
+// Concrete Strategy: Subtraction
+class ConcreteStrategySubtract implements Strategy {
+    public int execute(int a, int b) {
+        return a - b;
+    }
+}
+
+// Concrete Strategy: Multiplication
+class ConcreteStrategyMultiply implements Strategy {
+    public int execute(int a, int b) {
+        return a * b;
+    }
+}
+
+// Context
+class Context {
+    private Strategy strategy;
+
+    public void setStrategy(Strategy strategy) {
+        this.strategy = strategy;
+    }
+
+    public int executeStrategy(int a, int b) {
+        return strategy.execute(a, b);
+    }
+}
+
+// Example application
+public class ExampleApplication {
+    public static void main(String[] args) {
+        Context context = new Context();
+
+        // Read inputs
+        int firstNumber = 10; // Example value, replace with actual input
+        int secondNumber = 5; // Example value, replace with actual input
+        String action = "addition"; // Example value, replace with actual input
+
+        // Set strategy based on user input
+        if (action.equals("addition")) {
+            context.setStrategy(new ConcreteStrategyAdd());
+        } else if (action.equals("subtraction")) {
+            context.setStrategy(new ConcreteStrategySubtract());
+        } else if (action.equals("multiplication")) {
+            context.setStrategy(new ConcreteStrategyMultiply());
+        }
+
+        // Execute strategy and print result
+        int result = context.executeStrategy(firstNumber, secondNumber);
+        System.out.println("Result: " + result);
+    }
+}
+### Visitor Pattern
+// Strategy interface
+interface Strategy {
+    int execute(int a, int b);
+}
+
+// Concrete Strategy: Addition
+class ConcreteStrategyAdd implements Strategy {
+    public int execute(int a, int b) {
+        return a + b;
+    }
+}
+
+// Concrete Strategy: Subtraction
+class ConcreteStrategySubtract implements Strategy {
+    public int execute(int a, int b) {
+        return a - b;
+    }
+}
+
+// Concrete Strategy: Multiplication
+class ConcreteStrategyMultiply implements Strategy {
+    public int execute(int a, int b) {
+        return a * b;
+    }
+}
+
+// Context
+class Context {
+    private Strategy strategy;
+
+    public void setStrategy(Strategy strategy) {
+        this.strategy = strategy;
+    }
+
+    public int executeStrategy(int a, int b) {
+        return strategy.execute(a, b);
+    }
+}
+
+// Example application
+public class ExampleApplication {
+    public static void main(String[] args) {
+        Context context = new Context();
+
+        // Read inputs
+        int firstNumber = 10; // Example value, replace with actual input
+        int secondNumber = 5; // Example value, replace with actual input
+        String action = "addition"; // Example value, replace with actual input
+
+        // Set strategy based on user input
+        if (action.equals("addition")) {
+            context.setStrategy(new ConcreteStrategyAdd());
+        } else if (action.equals("subtraction")) {
+            context.setStrategy(new ConcreteStrategySubtract());
+        } else if (action.equals("multiplication")) {
+            context.setStrategy(new ConcreteStrategyMultiply());
+        }
+
+        // Execute strategy and print result
+        int result = context.executeStrategy(firstNumber, secondNumber);
+        System.out.println("Result: " + result);
+    }
+}
+### Visitor Pattern
+Visitor is a behavioral design pattern that lets you separate algorithms from the objects on which they operate.
+The Visitor pattern is a behavioral design pattern that allows adding new behaviors to existing classes without modifying their structure. It separates the algorithm from the object structure on which it operates. The pattern achieves this by defining a separate visitor object that traverses the object structure and performs operations on the elements it encounters.
+Problem it solves:
+
+In software design, the Visitor pattern solves the following problems:
+
+    Adding new operations: It allows adding new operations to existing class hierarchies without modifying those classes.
+    Separation of concerns: It separates the algorithm from the object structure, making it easier to manage and maintain both.
+    Open/closed principle: It adheres to the open/closed principle by allowing new behaviors to be added without modifying existing code.
+Structure and Components:
+Visitor: The Visitor interface declares a set of visiting methods that can take concrete elements of an object structure as arguments. These methods may have the same names if the program is written in a language that supports overloading, but the type of their parameters must be different.
+Concrete Visitor: Each Concrete Visitor implements several versions of the same behaviors, tailored for different concrete element classes.
+Element: The Element interface declares a method for “accepting” visitors. This method should have one parameter declared with the type of the visitor interface.
+Concrete Element: Each Concrete Element must implement the acceptance method. The purpose of this method is to redirect the call to the proper visitor’s method corresponding to the current element class. Be aware that even if a base element class implements this method, all subclasses must still override this method in their own classes and call the appropriate method on the visitor object.
+Client: The Client usually represents a collection or some other complex object (for example, a Composite tree). Usually, clients aren’t aware of all the concrete element classes because they work with objects from that collection via some abstract interface.
+
+Example:
+ // Element interface
+interface Shape {
+    void move(int x, int y);
+    void draw();
+    void accept(Visitor v);
+}
+
+// Concrete element classes
+class Dot implements Shape {
+    // Implementation details
+
+    public void accept(Visitor v) {
+        v.visitDot(this);
+    }
+}
+
+class Circle implements Shape {
+    // Implementation details
+
+    public void accept(Visitor v) {
+        v.visitCircle(this);
+    }
+}
+
+class Rectangle implements Shape {
+    // Implementation details
+
+    public void accept(Visitor v) {
+        v.visitRectangle(this);
+    }
+}
+
+class CompoundShape implements Shape {
+    // Implementation details
+
+    public void accept(Visitor v) {
+        v.visitCompoundShape(this);
+    }
+}
+
+// Visitor interface
+interface Visitor {
+    void visitDot(Dot d);
+    void visitCircle(Circle c);
+    void visitRectangle(Rectangle r);
+    void visitCompoundShape(CompoundShape cs);
+}
+
+// Concrete visitor implementing XML export functionality
+class XMLExportVisitor implements Visitor {
+    public void visitDot(Dot d) {
+        // Export the dot's ID and center coordinates.
+    }
+
+    public void visitCircle(Circle c) {
+        // Export the circle's ID, center coordinates, and radius.
+    }
+
+    public void visitRectangle(Rectangle r) {
+        // Export the rectangle's ID, left-top coordinates, width, and height.
+    }
+
+    public void visitCompoundShape(CompoundShape cs) {
+        // Export the shape's ID as well as the list of its children's IDs.
+    }
+}
+
+// Client code
+class Application {
+    private Shape[] allShapes;
+
+    public void export() {
+        XMLExportVisitor exportVisitor = new XMLExportVisitor();
+
+        for (Shape shape : allShapes) {
+            shape.accept(exportVisitor);
+        }
+    }
+}
+
